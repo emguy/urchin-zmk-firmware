@@ -111,9 +111,9 @@
 #define IT_LBRC LS(RA(LBKT))     // {
 #define IT_RBRC LS(RA(RBKT))     // }
 
-/** 
+/**
  * Personalized symbols.
- * 
+ *
  * These symbols are not part of the default italian input.
  * I use a custom windows keymap to input them.
 */
