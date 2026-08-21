@@ -91,6 +91,12 @@
 //  switch between cable & Bluetooth at runtime).
 #include <dt-bindings/zmk/outputs.h>
 
+//  Mouse scroll/button defines: SCRL_UP, SCRL_DOWN, MB1/MB2/MB3
+#include <dt-bindings/zmk/pointing.h>
+
+
+
+
 // ============================================================================
 //  LAYER NUMBERS
 // ============================================================================
@@ -165,6 +171,20 @@
 			// Here both are plain &kp so `&qt LSHIFT SPACE` = hold Shift, tap Space.
 			bindings = <&kp>, <&kp>;
 		};
+
+    msc: mouse_scroll {
+        compatible = "zmk,behavior-input-two-axis";
+        #binding-cells = <1>;
+        x-input-code = <INPUT_REL_HWHEEL>;
+        y-input-code = <INPUT_REL_WHEEL>;
+        acceleration-exponent = <0>;
+        time-to-max-speed-ms = <300>;
+    };
+
+    mkp: mouse_press {
+        compatible = "zmk,behavior-mouse-button-press";
+        #binding-cells = <1>;
+    };
 
     dot_colon: dot_colon {
       compatible = "zmk,behavior-mod-morph";
