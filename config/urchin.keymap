@@ -172,20 +172,6 @@
 			bindings = <&kp>, <&kp>;
 		};
 
-    msc: mouse_scroll {
-        compatible = "zmk,behavior-input-two-axis";
-        #binding-cells = <1>;
-        x-input-code = <INPUT_REL_HWHEEL>;
-        y-input-code = <INPUT_REL_WHEEL>;
-        acceleration-exponent = <0>;
-        time-to-max-speed-ms = <300>;
-    };
-
-    mkp: mouse_press {
-        compatible = "zmk,behavior-mouse-button-press";
-        #binding-cells = <1>;
-    };
-
     dot_colon: dot_colon {
       compatible = "zmk,behavior-mod-morph";
       #binding-cells = <0>;
