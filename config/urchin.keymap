@@ -58,9 +58,9 @@
  *        Position      0  1  2  3  4          5  6  7  8  9
  *        Binding       Q  W  E  R  T          Y  U  I  O  P
  *                     10 11 12 13 14         15 16 17 18 19
- *                      A  S  D  F  G          H  J  K  L  ò   (ò = IT_OGRV)
+ *                      A  S  D  F  G          H  J  K  L  '   (SQT)
  *                     20 21 22 23 24         25 26 27 28 29
- *                      Z  X  C  V  B          N  M  ,  .  ù   (ù = IT_UGRV)
+ *                      Z  X  C  V  B          N  M  ,  .  /   (tap; hold = RSHIFT)
  *                                30 31       32 33          <-- thumbs
  *
  *   Thumb keys:
@@ -87,10 +87,6 @@
 //  Bluetooth behavior, e.g. &bt BT_SEL 0 (choose host #0), &bt BT_CLR ...
 #include <dt-bindings/zmk/bt.h>
 
-//  Output behavior e.g. &output OUTPUT_USB / OUTPUT_BLE (if you want to
-//  switch between cable & Bluetooth at runtime).
-#include <dt-bindings/zmk/outputs.h>
-
 //  Mouse scroll/button defines: SCRL_UP, SCRL_DOWN, MB1/MB2/MB3
 #include <dt-bindings/zmk/pointing.h>
 
@@ -111,66 +107,51 @@
 #define SETTINGS 4   // Bluetooth, bootloader, reset helpers
 // -----------------
 
-// ============================================================================
-//  STICKY-KEY SETTINGS (&sk)
-// ============================================================================
-//  A "sticky key" (&sk) is a modifier that stays active for only the next
-//  key press — like "one-shot mod" in QMK. All &sk *bindings* in this file
-//  share the configuration in this block.
-&sk {
-	// "don't release mods on other mods presses":
-	// by default ZMK releases an active "stuck" modifier when you stick a
-	// SECOND modifier (because usually you want only one). This turns that
-	// behavior off, so you can e.g. stick LSHIFT, then stick LCTRL, and both
-	// remain active together (used for shortcuts like Ctrl+Shift+...).
-	ignore-modifiers;
-};
+/ {  // Everything from here belongs to the very top ("root") DT node.
+  // We are going to define the custom behaviors & the keymap under it.
 
-
-/ {	// Everything from here belongs to the very top ("root") DT node.
-	// We are going to define the custom behaviors & the keymap under it.
-
-	// ==========================================================================
-	//  CUSTOM BEHAVIORS : "hold-tap" quick-tap key (the `qt` behavior)
-	// ==========================================================================
-	//  A behavior simply says "when a key bound to me is pressed, do this".
-	//  `hold-tap` is the single most powerful idea in ZMK: one key, two jobs.
-	//  - you press AND HOLD longer than `tapping-term-ms` → the "hold" binding
-	//    fires while it stays down,
-	//  - you press and release quickly (a TAP) → the "tap" binding fires.
-	behaviors {
-		//  This defines the behavior named `qt`. We’ll use it as `&qt <hold> <tap>`.
-		qt: quick_tap {
-			// "zmk,behavior-hold-tap" — tells ZMK this is the built-in hold-tap
-			// type (we only customised a few parameters).
-			compatible = "zmk,behavior-hold-tap";
-			// A human-readable name, useful in keyboard diagnostics / tools.
-			label = "QUICK_TAP";
-			// (#binding-cells): a behavior can take a NUMBER of arguments.
-			// With <2>, the binding is written as `&qt <arg1> <arg2>`
-			// (two arguments separately by a space). arg1 is passed to the
-			// FIRST binding below (the "hold" one), arg2 to the SECOND ("tap").
-			#binding-cells = <2>;
-			// "flavor" decides WHO wins on ambiguous releases.
-			//   "hold-preferred": if held longer than tapping-term-ms, it turns
-			//     into a hold even if you then release "too soon".
-			//   (the other common flavor is "tap-preferred": a quick tap always
-			//    wins — better when the tap is a letter!).
-			// Here we want Space on tap and Shift on hold; holding longer than
-			// tapping-term-ms must become Shift, so hold-preferred is right.
-			flavor = "hold-preferred";
-			// A press must be released inside this many ms to count as a "tap":
-			// (tapping-term-ms = 200) → release within 200ms = tap, else hold.
-			tapping-term-ms = <200>;
-			// After a tap, quick-tap-ms waits this long for a SECOND quick tap.
-			// If a tap happens within that window, it is registered as another
-			// TAP (not a hold) even while you were holding modifiers. Useful
-			// when typing double-spaces or jumping Mod-tap "space" quickly.
-			quick-tap-ms = <200>;
-			// The two "sub-behaviors": bindings[0] = on hold, bindings[1] = on tap.
-			// Here both are plain &kp so `&qt LSHIFT SPACE` = hold Shift, tap Space.
-			bindings = <&kp>, <&kp>;
-		};
+  // ==========================================================================
+  //  CUSTOM BEHAVIORS : "hold-tap" quick-tap key (the `qt` behavior)
+  // ==========================================================================
+  //  A behavior simply says "when a key bound to me is pressed, do this".
+  //  `hold-tap` is the single most powerful idea in ZMK: one key, two jobs.
+  //  - you press AND HOLD longer than `tapping-term-ms` → the "hold" binding
+  //    fires while it stays down,
+  //  - you press and release quickly (a TAP) → the "tap" binding fires.
+  behaviors {
+    //  This defines the behavior named `qt`. We’ll use it as `&qt <hold> <tap>`.
+    qt: quick_tap {
+      // "zmk,behavior-hold-tap" — tells ZMK this is the built-in hold-tap
+      // type (we only customised a few parameters).
+      compatible = "zmk,behavior-hold-tap";
+      // A human-readable name, useful in keyboard diagnostics / tools.
+      label = "QUICK_TAP";
+      // (#binding-cells): a behavior can take a NUMBER of arguments.
+      // With <2>, the binding is written as `&qt <arg1> <arg2>`
+      // (two arguments separately by a space). arg1 is passed to the
+      // FIRST binding below (the "hold" one), arg2 to the SECOND ("tap").
+      #binding-cells = <2>;
+      // "flavor" decides WHO wins on ambiguous releases.
+      //   "hold-preferred": any other key press turns this into a hold
+      //     immediately, which misfires while rolling keys (e.g. a fast
+      //     "zx" becomes Shift+X).
+      //   "balanced": a tap wins if the other key is released first, so
+      //     ordinary rolls stay letters while deliberate holds still work.
+      // Every &qt tap here is a letter (or SLASH), so "balanced" is the
+      // right trade-off for home-row mods.
+      flavor = "balanced";
+      // A press must be released inside this many ms to count as a "tap":
+      // (tapping-term-ms = 200) → release within 200ms = tap, else hold.
+      tapping-term-ms = <200>;
+      // After a tap, quick-tap-ms waits this long for a SECOND quick tap.
+      // If a tap happens within that window, it is registered as another
+      // TAP (not a hold) even while you were holding modifiers. Useful
+      // when typing double-spaces or jumping Mod-tap "space" quickly.
+      quick-tap-ms = <200>;
+      // The two "sub-behaviors": bindings[0] = on hold, bindings[1] = on tap.
+      // Here both are plain &kp so `&qt LSHIFT SPACE` = hold Shift, tap Space.
+      bindings = <&kp>, <&kp>;
+    };
 
     dot_colon: dot_colon {
       compatible = "zmk,behavior-mod-morph";
@@ -185,108 +166,122 @@
       bindings = <&kp COMMA>, <&kp SEMI>;
       mods = <(MOD_LSFT|MOD_RSFT)>;
     };
-	}; // end behaviors
 
-	// ==========================================================================
-	//  MACROS : a tiny script that types out a sequence of key events
-	// ==========================================================================
-	//  A "macro" is a real behavior: its `bindings` are played one after the
-	//  other, each as press-then-release (press down, release up, next...).
-	macros {
-		// Just a comment about why it exists:
-		// Sometimes the computer forgets that a modifier key was RELEASED and
-		// behaves as if it’s still held (e.g. "c" types as "C"). Physically
-		// pressing & releasing each of the eight modifiers once, in order,
-		// re-syncs the host OS state. `&unstick` does exactly that.
-		unstick: unstick {
-			label = "ZM_unstick";
-			compatible = "zmk,behavior-macro";
-			#binding-cells = <0>;      // no arguments: write bare "&unstick"
-			// press & release LSHIFT, RSHIFT, LCTRL, RCTRL, LALT, RALT, LGUI, RGUI
-			bindings = <&kp LSHIFT &kp RSHIFT &kp LCTRL &kp RCTRL &kp LALT &kp RALT &kp LGUI &kp RGUI>;
-		};
-	};
+    comma_semicolon_ht: comma_semicolon_ht {
+      compatible = "zmk,behavior-hold-tap";
+      label = "COMMA_SEMICOLON_HT";
+      #binding-cells = <2>;
+      flavor = "balanced";
+      tapping-term-ms = <200>;
+      quick-tap-ms = <200>;
+      bindings = <&kp>, <&comma_semicolon>;
+    };
 
-	// ==========================================================================
-	//  COMBOS : chording several keys at once
-	// ==========================================================================
-	//  A combo fires when all given `key-positions` are pressed within
-	//  `timeout-ms`. Positions here are the *logical positions* (0..33)
-	//  we drew at the very top, NOT the row/column of the matrix.
-	combos {
-		compatible = "zmk,combos";
-		// both right thumb keys
-		combo_accent {
-			timeout-ms = <200>;
-			key-positions = <32 33>;
-			bindings = <&mo FNC>;
-		};
-		// both left thumb keys
-		combo_settings {
-			timeout-ms = <200>;
-			key-positions = <30 31>;
-			bindings = <&mo SETTINGS>;
-		};
-	};
+    dot_colon_ht: dot_colon_ht {
+      compatible = "zmk,behavior-hold-tap";
+      label = "DOT_COLON_HT";
+      #binding-cells = <2>;
+      flavor = "balanced";
+      tapping-term-ms = <200>;
+      quick-tap-ms = <200>;
+      bindings = <&kp>, <&dot_colon>;
+    };
+  }; // end behaviors
 
-	// ==========================================================================
-	//  THE KEYMAP : every layer of the keyboard
-	// ==========================================================================
-	//  Remember: we have 34 physical keys, so EVERY layer here must have
-	//  exactly 34 bindings (top row 10, home row 10, bottom row 10, thumbs 4).
-	//  The extra whitespace / gaps between the two hand columns don't matter
-	//  to ZMK — it just reads bindings left-to-right, top-to-bottom.
-	keymap {
-		compatible = "zmk,keymap";
+  // ==========================================================================
+  //  MACROS : a tiny script that types out a sequence of key events
+  // ==========================================================================
+  //  A "macro" is a real behavior: its `bindings` are played one after the
+  //  other, each as press-then-release (press down, release up, next...).
+  macros {
+    // Just a comment about why it exists:
+    // Sometimes the computer forgets that a modifier key was RELEASED and
+    // behaves as if it’s still held (e.g. "c" types as "C"). Physically
+    // pressing & releasing each of the eight modifiers once, in order,
+    // re-syncs the host OS state. `&unstick` does exactly that.
+    unstick: unstick {
+      label = "ZM_unstick";
+      compatible = "zmk,behavior-macro";
+      #binding-cells = <0>;      // no arguments: write bare "&unstick"
+      // press & release LSHIFT, RSHIFT, LCTRL, RCTRL, LALT, RALT, LGUI, RGUI
+      bindings = <&kp LSHIFT &kp RSHIFT &kp LCTRL &kp RCTRL &kp LALT &kp RALT &kp LGUI &kp RGUI>;
+    };
+  };
 
-		default_layer {
-			label = "Base";
-			bindings = <
-			&kp Q       &kp W      &kp E      &kp R &kp T       &kp Y &kp U  &kp I                      &kp O               &kp P
-			&kp A       &kp S      &kp D      &kp F &kp G       &kp H &kp J  &kp K                      &kp L               &kp SQT
-			&qt LCTRL Z &qt LALT X &qt LGUI C &kp V &kp B       &kp N &kp M  &qt RGUI &comma_semicolon &qt RALT &dot_colon &qt RCTRL SLASH
-    			                   &qt LSHIFT ESC   &mo FN      &mo SYM      &qt RSHIFT SPACE
-			>;
-		};
+  // ==========================================================================
+  //  COMBOS : chording several keys at once
+  // ==========================================================================
+  //  A combo fires when all given `key-positions` are pressed within
+  //  `timeout-ms`. Positions here are the *logical positions* (0..33)
+  //  we drew at the very top, NOT the row/column of the matrix.
+  combos {
+    compatible = "zmk,combos";
+    // both left thumb keys
+    combo_settings {
+      timeout-ms = <200>;
+      key-positions = <30 31>;
+      bindings = <&mo SETTINGS>;
+    };
+  };
 
-		sym_layer {
-			label = "Sym";
-			bindings = <
-			&kp LESS_THAN &kp LEFT_BRACE &kp LEFT_BRACKET &kp LEFT_PARENTHESIS &kp CARET      &kp DOLLAR &kp RIGHT_PARENTHESIS &kp RIGHT_BRACKET &kp RIGHT_BRACE &kp GREATER_THAN
-			&kp N1        &kp N2         &kp N3           &kp N4               &kp N5		      &kp N6     &kp N7                &kp N8            &kp N9          &kp N0
-			&kp AT_SIGN   &kp ASTERISK   &kp MINUS        &kp PLUS             &kp EQUAL 	    &kp TILDE  &kp POUND             &kp UNDERSCORE    &kp PERCENT     &kp EXCLAMATION
-													        &none  &none       &trans &none
-			>;
-		};
+  // ==========================================================================
+  //  THE KEYMAP : every layer of the keyboard
+  // ==========================================================================
+  //  Remember: we have 34 physical keys, so EVERY layer here must have
+  //  exactly 34 bindings (top row 10, home row 10, bottom row 10, thumbs 4).
+  //  The extra whitespace / gaps between the two hand columns don't matter
+  //  to ZMK — it just reads bindings left-to-right, top-to-bottom.
+  keymap {
+    compatible = "zmk,keymap";
 
-		fn_layer {
-			label = "Fn";
-			bindings = <
-			&kp TAB    &msc SCRL_UP   &kp UP_ARROW   &msc SCRL_DOWN  &kp DELETE    	 &kp PG_UP &kp HOME       &kp UP_ARROW   &kp END          &kp BACKSPACE
-			&kp ESC    &kp LEFT_ARROW &kp DOWN_ARROW &kp RIGHT_ARROW &kp ENTER 			 &kp PG_DN &kp LEFT_ARROW &kp DOWN_ARROW &kp RIGHT_ARROW  &kp ENTER
-			&kp C_MUTE &kp C_VOL_DN   &kp C_VOL_UP   &mkp MB1        &mkp MB2        &mkp MB3  &kp AMPERSAND  &kp GRAVE      &kp PIPE         &kp BACKSLASH
-																	&none	&trans    &none &none
-			>;
-		};
+    default_layer {
+      label = "Base";
+      bindings = <
+      &kp Q        &kp W       &kp E       &kp R     &kp T             &kp Y &kp U       &kp I                      &kp O               &kp P
+      &kp A        &kp S       &kp D       &kp F     &kp G             &kp H &kp J       &kp K                      &kp L               &kp SQT
+      &qt LSHIFT Z &qt LGUI X &qt LALT C &qt LCTRL V &kp B             &kp N &qt RCTRL M  &comma_semicolon_ht RALT 0 &dot_colon_ht RGUI 0 &qt RSHIFT SLASH
+                                  &kp SPACE   &mo FN      &mo SYM      &lt FNC ESC
+      >;
+    };
 
-		fnc_layer {
-			label = "Fnc";
-			bindings = <
-			&kp F1 &kp F2 &kp F3 &kp F4 &kp F5                       &none &none &none &none &none
-      &kp F6 &kp F7 &kp F8 &kp F9 &kp F10                      &none &none &none &none &none
-			&none &none &none &kp F11 &kp F12                        &none &none &none &none &none
-				 &none &none              &none &none
-			>;
-		};
+    sym_layer {
+      label = "Sym";
+      bindings = <
+      &kp PLUS     &kp N1 &kp N2 &kp N3 &kp UNDERSCORE             &kp LEFT_BRACE &kp LEFT_BRACKET     &kp RIGHT_BRACKET     &kp RIGHT_BRACE   &kp POUND
+      &kp N0       &kp N4 &kp N5 &kp N6 &kp MINUS                  &kp LESS_THAN  &kp LEFT_PARENTHESIS &kp RIGHT_PARENTHESIS &kp GREATER_THAN  &kp AMPERSAND
+      &kp ASTERISK &kp N7 &kp N8 &kp N9 &kp EQUAL                  &kp AT_SIGN    &kp CARET            &kp DOLLAR            &kp PERCENT       &kp EXCLAMATION
+                                  &none   &none      &trans      &none
+      >;
+    };
 
-		settings_layer {
-				label = "Setting";
-				bindings = <
-				&bootloader    &none &none &bt BT_CLR &bt BT_SEL 0               &bt BT_SEL 3 &none &none &none &bootloader
-				&none          &none &none &none      &bt BT_SEL 1 						   &bt BT_SEL 2 &none &none &none &none
-				&studio_unlock &none &none &none      &none                      &none        &none &none &none &studio_unlock
-										&none &none   &none &none
-				>;
-		};
-	};
+    fn_layer {
+      label = "Fn";
+      bindings = <
+      &mkp MB3  &mkp MB1       &kp UP_ARROW   &mkp MB2        &kp DELETE             &kp INSERT      &kp HOME       &kp UP_ARROW   &kp END          &kp PG_UP
+      &kp ESC   &kp LEFT_ARROW &kp DOWN_ARROW &kp RIGHT_ARROW &kp ENTER              &kp CAPSLOCK    &kp LEFT_ARROW &kp DOWN_ARROW &kp RIGHT_ARROW  &kp PG_DN
+      &kp TAB   &kp C_VOL_DN   &kp C_MUTE     &kp C_VOL_UP    &kp BACKSPACE          &kp PRINTSCREEN &kp TILDE      &kp GRAVE      &kp PIPE         &kp BACKSLASH
+                                  &none  &trans    &none &none
+      >;
+    };
+
+    fnc_layer {
+      label = "Fnc";
+      bindings = <
+         &none &none &none &none &none      &kp F1 &kp F2 &kp F3 &kp F4 &kp F5
+         &none &none &none &none &none      &kp F6 &kp F7 &kp F8 &kp F9 &kp F10
+         &none &none &none &none &none      &none &kp F11 &kp F12 &none &none
+         &none &none              &none &trans
+      >;
+    };
+
+    settings_layer {
+        label = "Setting";
+        bindings = <
+        &bootloader    &none &none &bt BT_CLR &bt BT_SEL 0               &bt BT_SEL 3 &none &none &none &bootloader
+        &none          &none &none &none      &bt BT_SEL 1                &bt BT_SEL 2 &none &none &none &none
+        &studio_unlock &none &none &none      &none                      &none        &none &none &none &studio_unlock
+                    &none &none   &none &none
+        >;
+    };
+  };
 };
