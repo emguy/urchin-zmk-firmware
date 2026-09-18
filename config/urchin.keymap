@@ -240,7 +240,7 @@
       &kp Q        &kp W       &kp E       &kp R     &kp T             &kp Y &kp U       &kp I                      &kp O               &kp P
       &kp A        &kp S       &kp D       &kp F     &kp G             &kp H &kp J       &kp K                      &kp L               &kp SQT
       &qt LSHIFT Z &qt LGUI X &qt LALT C &qt LCTRL V &kp B             &kp N &qt RCTRL M  &comma_semicolon_ht RALT 0 &dot_colon_ht RGUI 0 &qt RSHIFT SLASH
-                                  &kp SPACE   &mo FN      &mo SYM      &lt FNC ESC
+                                  &kp SPACE   &lt FN ESC     &lt SYM TAB      &lt FNC ENTER
       >;
     };
 
