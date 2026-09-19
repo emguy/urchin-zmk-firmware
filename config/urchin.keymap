@@ -141,32 +141,32 @@
       // right trade-off for home-row mods.
       flavor = "balanced";
       // A press must be released inside this many ms to count as a "tap":
-      // (tapping-term-ms = 120) → release within 120ms = tap, else hold.
-      tapping-term-ms = <120>;
+      // (tapping-term-ms = 180) → release within 180ms = tap, else hold.
+      tapping-term-ms = <180>;
       // After a tap, quick-tap-ms waits this long for a SECOND quick tap.
       // If a tap happens within that window, it is registered as another
       // TAP (not a hold) even while you were holding modifiers. Useful
       // when typing double-spaces or jumping Mod-tap "space" quickly.
-      quick-tap-ms = <120>;
+      quick-tap-ms = <180>;
       // The two "sub-behaviors": bindings[0] = on hold, bindings[1] = on tap.
       // Here both are plain &kp so `&qt LSHIFT SPACE` = hold Shift, tap Space.
       bindings = <&kp>, <&kp>;
     };
 
     //  Custom layer-tap for the three thumb keys, identical to the built-in
-    //  `&lt` (hold = &mo layer, tap = &kp key) but with a shorter 120ms
+    //  `&lt` (hold = &mo layer, tap = &kp key) but with a shorter 180ms
     //  tapping term so layer activation matches the `qt` home-row mods.
     //  The built-in `&lt` hardcodes tapping-term-ms = <200> and cannot be
     //  changed from urchin.conf, so we define our own here.
-    lt120: layer_tap_120 {
+    ltalt: layer_tap_alt {
       compatible = "zmk,behavior-hold-tap";
-      label = "LAYER_TAP_120";
+      label = "LAYER_TAP_180";
       #binding-cells = <2>;
       // Built-in `&lt` uses "tap-preferred": any other key press makes the
       // layer stick immediately. Kept the same so thumb layers feel normal.
       flavor = "tap-preferred";
-      tapping-term-ms = <120>;
-      quick-tap-ms = <120>;
+      tapping-term-ms = <180>;
+      quick-tap-ms = <180>;
       // bindings[0] = hold (momentary layer), bindings[1] = tap (key press).
       bindings = <&mo>, <&kp>;
     };
@@ -190,8 +190,8 @@
       label = "COMMA_SEMICOLON_HT";
       #binding-cells = <2>;
       flavor = "balanced";
-      tapping-term-ms = <200>;
-      quick-tap-ms = <200>;
+      tapping-term-ms = <180>;
+      quick-tap-ms = <180>;
       bindings = <&kp>, <&comma_semicolon>;
     };
 
@@ -200,8 +200,8 @@
       label = "DOT_COLON_HT";
       #binding-cells = <2>;
       flavor = "balanced";
-      tapping-term-ms = <200>;
-      quick-tap-ms = <200>;
+      tapping-term-ms = <180>;
+      quick-tap-ms = <180>;
       bindings = <&kp>, <&dot_colon>;
     };
   }; // end behaviors
@@ -258,7 +258,7 @@
       &kp Q        &kp W       &kp E       &kp R      &kp T             &kp Y &kp U       &kp I                       &kp O                &kp P
       &kp A        &kp S       &kp D       &kp F      &kp G             &kp H &kp J       &kp K                       &kp L                &kp SQT
       &qt LSHIFT Z &qt LALT X  &qt LCTRL C &qt LGUI V &kp B             &kp N &qt RGUI M  &comma_semicolon_ht RCTRL 0 &dot_colon_ht RALT 0 &qt RSHIFT SLASH
-                                  &kp SPACE   &lt120 FN ESC     &lt120 SYM TAB      &lt120 FNC ENTER
+                                  &kp SPACE   &ltalt FN ESC     &ltalt SYM TAB      &ltalt FNC ENTER
       >;
     };
 
