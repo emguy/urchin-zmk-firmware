@@ -13,11 +13,13 @@
 #
 ---
 include:
-  - board: nice_nano_v2
+  # nice_nano//zmk == nice_nano@2.0.0//zmk (ZMK main / Zephyr 4.1 HWMv2).
+  # On ZMK v0.3.0 this board was called nice_nano_v2.
+  - board: nice_nano//zmk
     shield: urchin_left # nice_view_adapter  nice_view_gem
     snippet: studio-rpc-usb-uart
     cmake-args: -DCONFIG_ZMK_STUDIO=y
-  - board: nice_nano_v2
+  - board: nice_nano//zmk
     shield: urchin_right # nice_view_adapter nice_view_gem
-  - board: nice_nano_v2
+  - board: nice_nano//zmk
     shield: settings_reset
