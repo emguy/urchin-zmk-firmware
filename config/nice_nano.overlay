@@ -1,0 +1,12 @@
+/*
+ * Keep the nRF52840 high-voltage regulator (REG0) in its default LDO mode.
+ *
+ * ZMK main / Zephyr 4.1 enables the nice!nano v2 high-voltage DC/DC in the
+ * board devicetree (&reg0 { status = "okay"; }). On nice!nano v2 clones and
+ * SuperMini nRF52840 boards this significantly increases idle current draw.
+ *
+ * See: https://github.com/zmkfirmware/zmk/issues/2990
+ */
+&reg0 {
+    status = "disabled";
+};
